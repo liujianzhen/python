@@ -1,6 +1,8 @@
 import requests
 import logging
-from urllib.parse import urlencode
+# from urllib.parse import urlencode
+from hyper.contrib import HTTP20Adapter
+import json
 
 url = 'https://t.17track.net/restapi/track'
 form_data = {
@@ -9,24 +11,44 @@ form_data = {
 	"timeZoneOffset":-480
 	}
 
-form_data_gb2312 = urlencode(form_data, encoding='gb2312')
+# form_data_gb2312 = urlencode(form_data, encoding='gb2312')
 
 request_headers = {
-	# 'authority': 't.17track.net',
-	# 'method': 'POST',
-	# 'path': '/restapi/track',
-	# 'scheme': 'https',
-	# 'accept': 'application/json, text/javascript, */*; q=0.01',
-	# 'accept-encoding': 'gzip, deflate, br',
-	# 'accept-language': 'zh-CN,zh;q=0.9',
-	# 'content-length': '85',
-	'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
-	'Cookie': '_yq_bid=G-40B76FFCB7A2A3F1; _ga=GA1.2.1066765095.1542172049; __gads=ID=61f49d7156dbf737:T=1542172044:S=ALNI_MZLEmPvfsu4YFm5snrlfzlTL8sYVg; v5_TranslateLang=zh-Hans; _gid=GA1.2.19936691.1571618328; v5_HisExpress=100002_100003_21051_100001_07048_07041_07047; Last-Event-ID=657572742f6332312f65626630353931666436312f737070612d616964656d2d756e656d2d6e776f64706f72642d717921253d76f610778c791',
-	# 'origin': 'https://t.17track.net',
-	'Referer': 'https://t.17track.net/zh-cn',
+	':method': 'POST',
+	':authority': 't.17track.net',
+	':scheme': 'https',
+	':path': '/restapi/track',
+	'content-length': '85',
+	'accept': 'application/json, text/javascript, */*; q=0.01',
+	'origin': 'https://t.17track.net',
+	'x-requested-with': 'XMLHttpRequest',
 	'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.100 Safari/537.36',
-	# 'x-requested-with': 'XMLHttpRequest',
+	'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+	'Referer': 'https://t.17track.net/zh-cn',
+	'accept-encoding': 'gzip, deflate, br',
+	'accept-language': 'zh-CN,zh;q=0.9',
 	}
 
-response = requests.post(url,data=form_data_gb2312,headers=request_headers)
+cookies = {
+	'_yq_bid':'G-3F8A0DB855407670',
+	'_ga':'GA1.2.247428011.1542183274',
+	'__gads':'ID=f78eb66443dc08f8:T=1542183269:S=ALNI_MZr6PsUpt--sbPeEMYZ6IUHYHNb0A',
+	'v5_TranslateLang':'zh-Hans',
+	'v5_HisExpress':'100002',
+	'__cfduid':'d12ea016e259bde8881bf4639b68540511572048500',
+	'_gid':'GA1.2.1481590150.1572230058',
+	'_gat':'1',
+	'Last-Event-ID':'657572742f3936322f30313932373330316536312f6461672d6c656e61702d717913223ebdae130778c791'
+	}
+
+session = requests.Session()
+session.mount(url,HTTP20Adapter())
+response = session.post(url,json=form_data,cookies = cookies,headers=request_headers,verify=False)
+# response = requests.post(url,json=form_data,headers=request_headers)
+r = response.request
+# print('headers:'+r.headers)
+# print('data:'+r.json)
+for attr in dir(r):
+	print(attr+':'+str(getattr(r,attr)))
+
 print(response.text)
